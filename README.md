@@ -9,6 +9,8 @@ Descriptive Statistics: Summarizes key statistics and trends in urban literacy r
 Visualizations: Graphical representations including bar charts, line graphs, and heat maps to illustrate literacy patterns.
 Geospatial Analysis: Maps to show regional variations in literacy rates.
 Statistical Modeling: Regression analysis and other statistical models to identify factors affecting literacy rates.
+
+
 Technologies Used
 R Programming
 ggplot2 for data visualization
