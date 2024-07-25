@@ -1,0 +1,99 @@
+---
+title: "Urban Literacy Rate in India"
+output:
+   flexdashboard::flex_dashboard:
+     orientation: columns
+     theme: cerulean
+     vertical_layout: fill
+---
+
+
+
+```{r setup, include=FALSE}
+  library(flexdashboard)
+  library(ggplot2)
+  library(plotly)
+  library(dplyr)
+  library(rmarkdown)
+  library(viridis)
+  library(ggthemes)
+  library(ggrepel)
+  library(sf)
+  library(rvest)
+  library(scales)
+  library(tidyr)
+  knitr::opts_chunk$set(echo = FALSE)
+```
+
+### 
+```{r , echo=FALSE}
+  #read_sf is used to read the shapefile 
+  shp1 <- read_sf("C:\\Users\\Rahul\\Downloads\\fe7f8\\India new political map\\Political_map_2019.shp")
+  #read.csv is used to read the csv file
+  df<-read.csv("C:\\Users\\Rahul\\Downloads\\states_urban.csv")
+
+```
+Column 
+----------------------------------------------------------
+
+
+### India Choropleth Graph showing State wise Urban Literacy Rate
+
+```{r, echo=FALSE, results='hide'}
+shp1$ST_NAME <- tolower(shp1$ST_NAME)
+#Creating a new column Literacy Rate column in the Dataframw
+ df <- df %>%
+  mutate(
+    Literacy_Rate = ((literate_males + literate_females) / Total) * 100
+  )
+
+# Group data by state and summarize total population, male literate, female literate for each state
+state_data <- df %>%
+  group_by(state_name) %>%
+  summarize(
+    Total_Population = sum(Total),
+    Total_Male_literate = sum(literate_males),
+    Total_Female_Literate = sum(literate_females)
+  ) %>%
+  mutate(
+    Literacy_Rate = ((Total_Male_literate + Total_Female_Literate) / Total_Population) * 100
+  )
+
+# Check column names in state_data
+  colnames(state_data)
+
+# Merge shapefile data with state_data using case-insensitive methods
+  merged_data <- left_join(shp1, state_data, by = c("ST_NAME" = "state_name"))
+
+
+# Plot choropleth map
+  ggplot() +
+    geom_sf(data = merged_data, aes(fill = Literacy_Rate)) +
+    scale_fill_gradient(name = "Literacy Rate", low = "lightblue", high = "darkblue") +
+    theme_minimal()+
+    ggtitle("India Choropleth Graph showing State wise Urban Literacy Rate")
+```
+
+Column 
+-------------------------------
+### Scatter plot for Graduate Female vs Graduate Male for each District
+
+```{r, echo=FALSE,results='aises'}
+# Create the plot
+plot_ly(df,
+        x = ~percent_graduate_male,
+        y = ~percent_graduate_female,
+        type = 'scatter',
+        mode = 'markers',
+        marker = list(
+          size = 5,
+          color='rgb(255,0,0)'
+          ),
+        #Paste state name and district name on the marker
+        text = ~paste('State: ', state_name, '<br>District: ', dist_name)) %>%
+  layout(title = 'Urban Literacy Rate: Graduate Male and Female Rates',
+         xaxis = list(title = 'Graduate Male Rate'),
+         yaxis = list(title = 'Graduate Female Rate'))
+
+
+```
